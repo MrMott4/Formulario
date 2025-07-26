@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Formulário de Estágio</title>
+  <style>
+    /* Estilos gerais */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f6f8;
+      padding: 40px;
+      max-width: 800px;
+      margin: auto;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 15px;
+    }
+
+    input, textarea, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    button {
+      background-color: #0066cc;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      margin-top: 20px;
+    }
+
+    button:hover {
+      background-color: #004999;
+    }
+
+    .painel {
+      margin-top: 40px;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 12px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #0066cc;
+      color: white;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+
+    tr:hover {
+      background-color: #e9f2ff;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Formulário de Registro de Estágio</h1>
+
+  <label for="data">Data:</label>
+  <input type="date" id="data">
+
+  <label for="entrada">Hora de Entrada:</label>
+  <input type="time" id="entrada">
+
+  <label for="saida">Hora de Saída:</label>
+  <input type="time" id="saida">
+
+  <label for="descricao">Descrição da Atividade:</label>
+  <textarea id="descricao" rows="4"></textarea>
+
+  <button onclick="registrar()">Salvar Registro</button>
+
+  <div class="painel">
+    <h2>Histórico de Registros</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Horas</th>
+          <th>Acumulado</th>
+          <th>Atividade</th>
+        </tr>
+      </thead>
+      <tbody id="tabelaRegistros"></tbody>
+    </table>
+  </div>
+
+  <script>
+    const registros = [];
+
+    function calcularHoras(entrada, saida) {
+      const [h1, m1] = entrada.split(":").map(Number);
+      const [h2, m2] = saida.split(":").map(Number);
+      const minutos = (h2 * 60 + m2) - (h1 * 60 + m1);
+
+      const horas = Math.floor(minutos / 60);
+      const resto = minutos % 60;
+      return `${horas}h${resto}min`;
+    }
+
+    function calcularAcumulado(registros) {
+      let totalMin = 0;
+      return registros.map(reg => {
+        const [h, m] = reg.horas.split(/[hmin]+/).map(Number);
+        totalMin += h * 60 + m;
+
+        const horas = Math.floor(totalMin / 60);
+        const minutos = totalMin % 60;
+        return { ...reg, acumulado: `${horas}h${minutos}min` };
+      });
+    }
+
+    function registrar() {
+      const data = document.getElementById("data").value;
+      const entrada = document.getElementById("entrada").value;
+      const saida = document.getElementById("saida").value;
+      const atividade = document.getElementById("descricao").value;
+
+      if (!data || !entrada || !saida || !atividade) {
+        alert("Preencha todos os campos!");
+        return;
+      }
+
+      const horas = calcularHoras(entrada, saida);
+      const novo = { data, entrada, saida, atividade, horas };
+      registros.push(novo);
+
+      atualizarTabela();
+      limparCampos();
+    }
+
+    function atualizarTabela() {
+      const tabela = document.getElementById("tabelaRegistros");
+      tabela.innerHTML = "";
+
+      const listaAtualizada = calcularAcumulado(registros);
+
+      listaAtualizada.forEach(reg => {
+        const linha = document.createElement("tr");
+        linha.innerHTML = `
+          <td>${reg.data}</td>
+          <td>${reg.horas}</td>
+          <td>${reg.acumulado}</td>
+          <td>${reg.atividade}</td>
+        `;
+        tabela.appendChild(linha);
+      });
+    }
+
+    function limparCampos() {
+      document.getElementById("data").value = "";
+      document.getElementById("entrada").value = "";
+      document.getElementById("saida").value = "";
+      document.getElementById("descricao").value = "";
+    }
+  </script>
+
+</body>
+</html>
